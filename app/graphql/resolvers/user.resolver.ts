@@ -4,7 +4,7 @@ const userResolver = {
       return [
         {
           id: 1,
-          name: "mg mg",
+          username: "mg mg",
         },
       ];
     },

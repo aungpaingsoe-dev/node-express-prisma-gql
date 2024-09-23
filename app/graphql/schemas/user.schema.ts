@@ -3,7 +3,8 @@ import gql from "graphql-tag";
 const userSchema = gql`
   type User {
     id: ID!
-    name: String!
+    username: String!
+    password: String!
   }
 
   type Query {

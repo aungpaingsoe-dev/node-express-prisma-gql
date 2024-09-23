@@ -4,7 +4,11 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import express from "express";
 import http from "http";
 import cors from "cors";
-import { typeDefs, resolvers } from "./graphql";
+import dotenv from "dotenv";
+import { typeDefs, resolvers } from "./app/graphql/index.js";
+
+dotenv.config();
+const PORT = process.env.PORT;
 
 interface MyContext {
   token?: String;
@@ -12,12 +16,24 @@ interface MyContext {
 
 const app = express();
 const httpServer = http.createServer(app);
+
 const server = new ApolloServer<MyContext>({
   typeDefs,
   resolvers,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  formatError: (formattedError) => {
+
+    const errors = {
+      message: formattedError.message, 
+      code: formattedError.extensions?.code, 
+    };
+
+    return errors;
+  },
 });
+
 await server.start();
+
 app.use(
   "/graphql",
   cors<cors.CorsRequest>(),
@@ -28,7 +44,7 @@ app.use(
 );
 
 await new Promise<void>((resolve) =>
-  httpServer.listen({ port: 4000 }, resolve)
+  httpServer.listen({ port: PORT }, resolve)
 );
 
-console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+console.log(`🚀 Server is ready with graphql`);
