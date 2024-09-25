@@ -1,4 +1,4 @@
-import { GraphQLError, GraphQLType } from "graphql";
+import { GraphQLError } from "graphql";
 import { prisma } from "../../../prisma/client.js";
 
 const authResolver = {
@@ -39,6 +39,7 @@ const authResolver = {
         data: {
           username: signUpInput.username,
           password: signUpInput.password,
+          profile: null,
         },
       });
       return user;

@@ -5,6 +5,19 @@ const userSchema = gql`
     id: ID!
     username: String!
     password: String!
+    profile: Profile
+  }
+
+  type Profile {
+    id: ID!
+    dob: String
+    bio: String
+    gender: Gender
+  }
+
+  enum Gender {
+    male
+    female
   }
 
   type Query {
