@@ -1,5 +1,12 @@
 import { GraphQLError } from "graphql";
 import { prisma } from "../../../prisma/client.js";
+import {
+  SignInInput,
+  signInSchema,
+  SignUpInput,
+  signUpSchema,
+} from "../../validators/auth.validator.js";
+import { ZodError } from "zod";
 
 const authResolver = {
   Query: {
@@ -11,38 +18,83 @@ const authResolver = {
     },
   },
   Mutation: {
-    signIn: async (
-      _: any,
-      signInInput: { username: string; password: string }
-    ) => {
-      const user = await prisma.user.findFirst({
-        where: { username: signInInput.username },
-      });
+    signIn: async (_: any, signInInput: SignInInput) => {
+      try {
+        signInSchema.parse(signInInput);
 
-      if (!user) {
-        throw new GraphQLError("User not found", {
-          extensions: { code: "YOUR_ERROR_CODE" },
+        const user = await prisma.user.findFirst({
+          where: { username: signInInput.username },
+        });
+
+        if (!user) {
+          throw new GraphQLError("User not found", {
+            extensions: { code: "RECORD_NOT_FOUND" },
+          });
+        }
+
+        return user;
+      } catch (error) {
+        if (error instanceof ZodError) {
+          throw new GraphQLError("Validation Error", {
+            extensions: {
+              code: "VALIDATION_ERROR",
+              details: error.errors,
+              http: {
+                status: 400,
+              },
+            },
+          });
+        }
+
+        throw new GraphQLError("Internal Server Error", {
+          extensions: {
+            code: "INTERNAL_SERVER_ERROR",
+            http: {
+              status: 500,
+            },
+          },
         });
       }
-
-      return user;
     },
-    signUp: async (
-      parent: any,
-      signUpInput: {
-        username: string;
-        password: string;
-        passwordConfirm: string;
+    signUp: async (_: any, signUpInput: SignUpInput) => {
+      try {
+        signUpSchema.parse(signUpInput);
+        const user = await prisma.user.create({
+          data: {
+            username: signUpInput.username,
+            password: signUpInput.password,
+            profile: {
+              create: {
+                dob: null,
+                bio: null,
+                gender: null,
+              },
+            },
+          },
+        });
+        return user;
+      } catch (error) {
+        if (error instanceof ZodError) {
+          throw new GraphQLError("Validation Error", {
+            extensions: {
+              code: "VALIDATION_ERROR",
+              details: error.errors,
+              http: {
+                status: 400,
+              },
+            },
+          });
+        }
+
+        throw new GraphQLError("Internal Server Error", {
+          extensions: {
+            code: "INTERNAL_SERVER_ERROR",
+            http: {
+              status: 500,
+            },
+          },
+        });
       }
-    ) => {
-      const user = await prisma.user.create({
-        data: {
-          username: signUpInput.username,
-          password: signUpInput.password,
-          profile: null,
-        },
-      });
-      return user;
     },
   },
 };

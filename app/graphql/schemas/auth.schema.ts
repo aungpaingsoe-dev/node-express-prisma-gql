@@ -11,14 +11,14 @@ const authSchema = gql`
   }
 
   input SignInInput {
-    username: String!
-    password: String!
+    username: String
+    password: String
   }
 
   input SignUpInput {
-    username: String!
-    password: String!
-    passwordConfirm: String!
+    username: String
+    password: String
+    passwordConfirm: String
   }
 `;
 

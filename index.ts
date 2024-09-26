@@ -21,14 +21,12 @@ const server = new ApolloServer<MyContext>({
   typeDefs,
   resolvers,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  formatError: (formattedError) => {
-
-    const errors = {
-      message: formattedError.message, 
-      code: formattedError.extensions?.code, 
+  formatError: (error: any) => {
+    return {
+      message : error.message,
+      code : error.extensions.code,
+      details : error.extensions.details
     };
-
-    return errors;
   },
 });
 
@@ -47,4 +45,4 @@ await new Promise<void>((resolve) =>
   httpServer.listen({ port: PORT }, resolve)
 );
 
-console.log(`🚀 Server is ready with graphql`);
+console.log(`🚀 Server is ready at http://localhost:${PORT}/graphql`);
